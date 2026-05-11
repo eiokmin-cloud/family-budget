@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#667eea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="우리가계부">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>2026 우리 가족 자산관리</title>
+<style>
+:root{
+  --primary:#667eea;--secondary:#764ba2;--success:#48bb78;
+  --warning:#ed8936;--danger:#f56565;--bg:#f0f2f5;--card:#fff;
+  --text:#2d3748;--text-light:#718096;--border:#e2e8f0;
+  --shadow:0 2px 12px rgba(0,0,0,0.08);--radius:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+
+/* 헤더 */
+.app-header{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;padding:20px 20px 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(102,126,234,.4)}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+.header-title{font-size:18px;font-weight:700}
+.header-date{font-size:12px;opacity:.8;margin-top:2px}
+.header-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;font-size:12px}
+
+/* 하단 탭 */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 10px;cursor:pointer;border:none;background:none;transition:all .2s}
+.nav-item .nav-icon{font-size:22px;transition:transform .2s}
+.nav-item .nav-label{font-size:10px;color:var(--text-light);margin-top:2px;font-weight:500}
+.nav-item.active .nav-icon{transform:scale(1.15)}
+.nav-item.active .nav-label{color:var(--primary);font-weight:700}
+
+/* 탭 패널 */
+.tab-panel{display:none;padding:16px;animation:fadeIn .25s ease}
+.tab-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* 카드 */
+.card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
+.card-title{font-size:14px;font-weight:700;color:var(--text-light);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.section-title{font-size:16px;font-weight:700;margin-bottom:12px}
+
+/* 버튼 */
+.btn{border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff}
+.btn-primary:active{transform:scale(.97)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+.btn-full{width:100%}
+
+/* 폼 */
+.form-group{margin-bottom:12px}
+.form-label{font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:4px;display:block}
+.form-control{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);background:#fff;transition:border .2s;outline:none;font-family:inherit}
+.form-control:focus{border-color:var(--primary)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* 대시보드 요약 */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.summary-card{border-radius:14px;padding:16px;text-align:center;color:#fff}
+.sc-blue{background:linear-gradient(135deg,var(--primary),var(--secondary))}
+.sc-red{background:linear-gradient(135deg,#f56565,#e53e3e)}
+.sc-green{background:linear-gradient(135deg,#48bb78,#38a169)}
+.sc-orange{background:linear-gradient(135deg,#ed8936,#dd6b20)}
+.sc-label{font-size:11px;opacity:.85;margin-bottom:4px}
+.sc-value{font-size:20px;font-weight:800}
+.sc-sub{font-size:11px;opacity:.7;margin-top:2px}
+
+/* 프로그레스 */
+.progress-bar-wrap{background:#edf2f7;border-radius:20px;height:10px;overflow:hidden;margin:6px 0}
+.progress-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--primary),var(--secondary));transition:width .6s ease}
+
+/* 수입 카드 */
+.income-section{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.income-day-card{background:var(--card);border-radius:12px;padding:12px;text-align:center;box-shadow:var(--shadow);border:2px solid transparent;transition:all .2s}
+.income-day-label{font-size:11px;color:var(--text-light);font-weight:600}
+.income-day-value{font-size:15px;font-weight:800;color:var(--primary);margin-top:4px}
+
+/* 지출 */
+.expense-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.expense-item:last-child{border-bottom:none}
+.exp-cat{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.cat-식비{background:#fef3c7;color:#92400e}
+.cat-교통{background:#dbeafe;color:#1e40af}
+.cat-쇼핑{background:#fce7f3;color:#9d174d}
+.cat-의료{background:#dcfce7;color:#166534}
+.cat-문화{background:#ede9fe;color:#5b21b6}
+.cat-기타{background:#f1f5f9;color:#475569}
+
+/* 자산 */
+.ownership-bar{height:20px;border-radius:10px;overflow:hidden;display:flex;margin:8px 0}
+.ob-mine{background:linear-gradient(90deg,var(--primary),#a78bfa);transition:width .6s}
+.ob-hub{background:linear-gradient(90deg,#f093fb,#f5576c);transition:width .6s}
+.ob-joint{background:linear-gradient(90deg,#48bb78,#38a169);transition:width .6s}
+.asset-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow);border-left:4px solid var(--primary)}
+.asset-item.hub{border-left-color:#f093fb}
+.asset-item.joint{border-left-color:#48bb78}
+.asset-hdr{display:flex;justify-content:space-between;align-items:flex-start}
+.asset-name{font-weight:700;font-size:14px}
+.asset-value{font-weight:800;font-size:15px;color:var(--primary)}
+.asset-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.abadge{background:#edf2f7;border-radius:6px;padding:2px 8px;font-size:11px;color:var(--text-light)}
+.dd-red{background:#fff5f5;color:#c53030;font-weight:700}
+.dd-yellow{background:#fffff0;color:#b7791f;font-weight:700}
+.dd-green{background:#f0fff4;color:#276749;font-weight:700}
+
+/* 냉장고 */
+.fridge-zone{margin-bottom:16px}
+.fridge-zone-title{font-size:13px;font-weight:700;margin-bottom:8px}
+.fridge-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--card);border-radius:10px;margin-bottom:6px;box-shadow:var(--shadow)}
+.fi-name{font-size:14px;font-weight:600}
+.fi-meta{font-size:11px;color:var(--text-light);margin-top:2px}
+.dday-badge{border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700}
+.dd-urgent{background:#fff5f5;color:#c53030}
+.dd-warn{background:#fffff0;color:#b7791f}
+.dd-ok{background:#f0fff4;color:#276749}
+
+/* 식단 */
+.meal-week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px}
+.meal-day{background:var(--card);border-radius:10px;padding:8px 4px;text-align:center;box-shadow:var(--shadow);cursor:pointer;border:2px solid transparent;transition:all .2s}
+.meal-day.selected{border-color:var(--primary);background:#ebf4ff}
+.md-name{font-size:10px;color:var(--text-light);font-weight:600}
+.md-num{font-size:16px;font-weight:800}
+.md-dot{width:5px;height:5px;background:var(--success);border-radius:50%;margin:3px auto 0}
+.meal-card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow)}
+.meal-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:8px}
+.mb-breakfast{background:#fef3c7;color:#92400e}
+.mb-lunch{background:#dbeafe;color:#1e40af}
+.mb-dinner{background:#fce7f3;color:#9d174d}
+.meal-menu{font-size:15px;font-weight:700;margin-bottom:4px}
+.meal-chef{font-size:12px;color:var(--text-light)}
+
+/* 모달 */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-height:85vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:17px;font-weight:700}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-light)}
+
+/* FAB */
+.fab{position:fixed;bottom:90px;right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;font-size:26px;cursor:pointer;box-shadow:0 4px 16px rgba(102,126,234,.5);z-index:150;transition:transform .2s;display:flex;align-items:center;justify-content:center}
+.fab:active{transform:scale(.92)}
+
+/* 유틸 */
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+.chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#edf2f7;color:#4a5568}
+.chip-blue{background:#ebf4ff;color:#2b6cb0}
+.chip-pink{background:#fce7f3;color:#9d174d}
+.chip-green{background:#f0fff4;color:#276749}
+.empty-state{text-align:center;padding:32px 16px;color:var(--text-light)}
+.empty-icon{font-size:40px;margin-bottom:8px}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.mt-8{margin-top:8px}
+@media(max-width:360px){.form-row{grid-template-columns:1fr}.summary-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="app-header">
+  <div class="header-top">
+    <div>
+      <div class="header-title">&#128176; 우리 가족 자산관리</div>
+      <div class="header-date" id="headerDate"></div>
+    </div>
+    <div class="header-badge" id="headerBadge">2026&#45;</div>
+  </div>
+</header>
+
+<!-- FAB 버튼 -->
+<button class="fab" id="fabBtn" onclick="openAddModal()">&#43;</button>
+
+<!-- ===== 탭 패널들 ===== -->
+
+<!-- 1. 대시보드 -->
+<div class="tab-panel active" id="panel-dashboard">
+  <div class="summary-grid">
+    <div class="summary-card sc-blue">
+      <div class="sc-label">&#128176; 이번달 수입</div>
+      <div class="sc-value" id="d-income">0원</div>
+      <div class="sc-sub">합계</div>
+    </div>
+    <div class="summary-card sc-red">
+      <div class="sc-label">&#128184; 이번달 지출</div>
+      <div class="sc-value" id="d-expense">0원</div>
+      <div class="sc-sub" id="d-expratio">지출률 0%</div>
+    </div>
+    <div class="summary-card sc-green">
+      <div class="sc-label">&#127974; 총 자산</div>
+      <div class="sc-value" id="d-asset">0원</div>
+      <div class="sc-sub">순자산 기준</div>
+    </div>
+    <div class="summary-card sc-orange">
+      <div class="sc-label">&#128200; 저축률</div>
+      <div class="sc-value" id="d-rate">0%</div>
+      <div class="sc-sub">(수입-지출)/수입</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">&#128202; 저축률 목표</div>
+    <div class="flex-between" style="margin-bottom:6px;">
+      <span style="font-size:13px;">목표: <b id="d-goaltext">50%</b></span>
+      <span style="font-size:13px;color:var(--primary);font-weight:700;" id="d-ratetext">0%</span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="d-progressbar" style="width:0%"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">&#129373; 오늘의 식단</div>
+    <div id="d-todaymeal"><div class="empty-state"><div class="empty-icon">&#127869;</div><div>등록된 식단이 없어요</div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">&#128680; 소비기한 임박 (3일 이내)</div>
+    <div id="d-urgentfridge"><div class="empty-state"><div class="empty-icon">&#9989;</div><div>임박한 식재료 없음</div></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">&#128197; 만기 예정 자산 (30일 이내)</div>
+    <div id="d-maturity"><div class="empty-state"><div class="empty-icon">&#127974;</div><div>만기 예정 자산 없음</div></div></div>
+  </div>
+</div>
+
+<!-- 2. 수입/지출 -->
+<div class="tab-panel" id="panel-finance">
+  <div class="section-title">&#128179; 수입 현황</div>
+  <div class="income-section" id="incomeCards"></div>
+  <div class="card">
+    <div class="card-title">&#128221; 지출 내역</div>
+    <div id="expenseList"><div class="empty-state"><div class="empty-icon">&#128203;</div><div>지출 내역이 없어요<br>+ 버튼으로 추가하세요</div></div></div>
+  </div>
+</div>
+
+<!-- 3. 자산 -->
+<div class="tab-panel" id="panel-asset">
+  <div class="card">
+    <div class="card-title">&#128106; 자산 소유 현황</div>
+    <div class="ownership-bar" id="ownerBar">
+      <div class="ob-mine" style="width:33%"></div>
+      <div class="ob-hub" style="width:33%"></div>
+      <div class="ob-joint" style="width:34%"></div>
+    </div>
+    <div style="display:flex;gap:12px;font-size:12px;margin-top:6px;">
+      <span>&#128309; 나: <b id="r-mine">0%</b></span>
+      <span>&#128308; 남편: <b id="r-hub">0%</b></span>
+      <span>&#128994; 공동: <b id="r-joint">0%</b></span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">&#128200; 순자산 추이 (최근 6개월)</div>
+    <div style="width:100%;height:180px;position:relative;"><canvas id="assetChart"></canvas></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <button class="btn btn-sm chip" onclick="filterAssets('all')" id="fa-all" style="border:2px solid var(--primary);">전체</button>
+    <button class="btn btn-sm chip" onclick="filterAssets('self')" id="fa-self" style="border:2px solid transparent;">나</button>
+    <button class="btn btn-sm chip" onclick="filterAssets('husband')" id="fa-husband" style="border:2px solid transparent;">남편</button>
+    <button class="btn btn-sm chip" onclick="filterAssets('joint')" id="fa-joint" style="border:2px solid transparent;">공동</button>
+  </div>
+  <div id="assetList"><div class="empty-state"><div class="empty-icon">&#127974;</div><div>자산을 추가해보세요</div></div></div>
+</div>
+
+<!-- 4. 냉장고 -->
+<div class="tab-panel" id="panel-fridge">
+  <div class="fridge-zone">
+    <div class="fridge-zone-title">&#128308; 주의 — 3일 이내</div>
+    <div id="fz-urgent"><div class="empty-state"><div class="empty-icon">&#9989;</div><div>임박한 식재료 없음</div></div></div>
+  </div>
+  <div class="fridge-zone">
+    <div class="fridge-zone-title">&#128993; 확인 — 7일 이내</div>
+    <div id="fz-warn"><div class="empty-state"><div class="empty-icon">&#9989;</div><div>해당 식재료 없음</div></div></div>
+  </div>
+  <div class="fridge-zone">
+    <div class="fridge-zone-title">&#128994; 여유 있음</div>
+    <div id="fz-ok"><div class="empty-state"><div class="empty-icon">&#128522;</div><div>식재료를 추가해보세요</div></div></div>
+  </div>
+</div>
+
+<!-- 5. 식단 -->
+<div class="tab-panel" id="panel-meal">
+  <div class="meal-week-grid" id="mealWeekGrid"></div>
+  <div id="mealDetail"><div class="empty-state"><div class="empty-icon">&#127869;</div><div>날짜를 선택하세요</div></div></div>
+</div>
+
+<!-- 6. 설정 -->
+<div class="tab-panel" id="panel-settings">
+  <div class="card">
+    <div class="card-title">&#128100; 가족 정보</div>
+    <div class="form-group"><label class="form-label">내 이름</label><input class="form-control" id="s-myname" value="아내" onchange="saveSetting()"></div>
+    <div class="form-group"><label class="form-label">남편 이름</label><input class="form-control" id="s-hubname" value="남편" onchange="saveSetting()"></div>
+    <div class="form-group"><label class="form-label">월 저축 목표 (%)</label><input class="form-control" type="number" id="s-goal" value="50" onchange="saveSetting()"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">&#128190; 데이터 관리</div>
+    <button class="btn btn-primary btn-full" onclick="exportData()" style="margin-bottom:8px;">&#128228; 데이터 내보내기 (JSON)</button>
+    <button class="btn btn-full" style="background:#edf2f7;margin-bottom:8px;" onclick="importData()">&#128229; 데이터 가져오기</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+    <button class="btn btn-danger btn-full" onclick="clearAllData()">&#128465; 전체 데이터 초기화</button>
+  </div>
+  <div class="card">
+    <div class="card-title">&#8505; 앱 정보</div>
+    <div class="setting-row"><span>버전</span><span style="color:var(--text-light)">v3.0 PWA</span></div>
+    <div class="setting-row"><span>저장 방식</span><span style="color:var(--text-light)">로컬 저장소</span></div>
+    <div class="setting-row"><span>PWA 상태</span><span id="pwaStatus" style="color:var(--text-light)">확인중...</span></div>
+  </div>
+</div>
+
+<!-- ===== 하단 탭 바 ===== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchTab('dashboard',this)"><span class="nav-icon">&#127968;</span><span class="nav-label">홈</span></button>
+  <button class="nav-item" onclick="switchTab('finance',this)"><span class="nav-icon">&#128179;</span><span class="nav-label">수입/지출</span></button>
+  <button class="nav-item" onclick="switchTab('asset',this)"><span class="nav-icon">&#128200;</span><span class="nav-label">자산</span></button>
+  <button class="nav-item" onclick="switchTab('fridge',this)"><span class="nav-icon">&#10052;</span><span class="nav-label">냉장고</span></button>
+  <button class="nav-item" onclick="switchTab('meal',this)"><span class="nav-icon">&#127869;</span><span class="nav-label">식단</span></button>
+  <button class="nav-item" onclick="switchTab('settings',this)"><span class="nav-icon">&#9881;</span><span class="nav-label">설정</span></button>
+</nav>
+
+<!-- ===== 모달들 ===== -->
+
+<!-- 수입 -->
+<div class="modal-overlay" id="incomeModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">&#128176; 수입 입력</span><button class="modal-close" onclick="closeModal('incomeModal')">&#10005;</button></div>
+    <div class="form-group"><label class="form-label">지급일</label><select class="form-control" id="m-incday"><option value="1">1일 (월급)</option><option value="10">10일 (부수입)</option><option value="20">20일 (기타)</option></select></div>
+    <div class="form-group"><label class="form-label">항목명</label><input class="form-control" id="m-incname" placeholder="예: 12월 급여"></div>
+    <div class="form-group"><label class="form-label">금액 (원)</label><input class="form-control" type="number" id="m-incamt" placeholder="0"></div>
+    <div class="form-group"><label class="form-label">귀속</label><select class="form-control" id="m-incowner"><option value="self">나</option><option value="husband">남편</option></select></div>
+    <button class="btn btn-primary btn-full mt-8" onclick="saveIncome()">저장하기</button>
+  </div>
+</div>
+
+<!-- 지출 -->
+<div class="modal-overlay" id="expenseModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">&#128184; 지출 입력</span><button class="modal-close" onclick="closeModal('expenseModal')">&#10005;</button></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">날짜</label><input class="form-control" type="date" id="m-expdate"></div>
+      <div class="form-group"><label class="form-label">카테고리</label><select class="form-control" id="m-expcat"><option>식비</option><option>교통</option><option>쇼핑</option><option>의료</option><option>문화</option><option>기타</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">내용</label><input class="form-control" id="m-expdesc" placeholder="예: 마트 장보기"></div>
+    <div class="form-group"><label class="form-label">금액 (원)</label><input class="form-control" type="number" id="m-expamt" placeholder="0"></div>
+    <button class="btn btn-primary btn-full mt-8" onclick="saveExpense()">저장하기</button>
+  </div>
+</div>
+
+<!-- 자산 -->
+<div class="modal-overlay" id="assetModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">&#127974; 자산 입력</span><button class="modal-close" onclick="closeModal('assetModal')">&#10005;</button></div>
+    <div class="form-group"><label class="form-label">자산명</label><input class="form-control" id="m-aname" placeholder="예: 신한은행 정기예금"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">소유</label><select class="form-control" id="m-aowner"><option value="self">나</option><option value="husband">남편</option><option value="joint">공동</option></select></div>
+      <div class="form-group"><label class="form-label">계좌 유형</label><select class="form-control" id="m-atype"><option>예금</option><option>적금</option><option>ISA</option><option>IRP</option><option>연금</option><option>주식</option><option>부동산</option><option>기타</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">금융기관</label><input class="form-control" id="m-ainst" placeholder="예: 신한은행, 삼성증권"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">금액 (원)</label><input class="form-control" type="number" id="m-aamt" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">이자율 (%)</label><input class="form-control" type="number" step="0.01" id="m-arate" placeholder="3.5"></div>
+    </div>
+    <div class="form-group"><label class="form-label">만기일 (선택)</label><input class="form-control" type="date" id="m-amat"></div>
+    <div class="form-group"><label class="form-label">메모</label><input class="form-control" id="m-amemo" placeholder="자유롭게 입력"></div>
+    <button class="btn btn-primary btn-full mt-8" onclick="saveAsset()">저장하기</button>
+  </div>
+</div>
+
+<!-- 냉장고 -->
+<div class="modal-overlay" id="fridgeModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">&#10052; 식재료 추가</span><button class="modal-close" onclick="closeModal('fridgeModal')">&#10005;</button></div>
+    <div class="form-group"><label class="form-label">식재료명</label><input class="form-control" id="m-fname" placeholder="예: 계란, 당근"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">보관 위치</label><select class="form-control" id="m-floc"><option>냉장</option><option>냉동</option><option>실온</option></select></div>
+      <div class="form-group"><label class="form-label">소비기한</label><input class="form-control" type="date" id="m-fexp"></div>
+    </div>
+    <div class="form-group"><label class="form-label">수량/단위</label><input class="form-control" id="m-fqty" placeholder="예: 10개, 500g"></div>
+    <button class="btn btn-primary btn-full mt-8" onclick="saveFridge()">저장하기</button>
+  </div>
+</div>
+
+<!-- 식단 -->
+<div class="modal-overlay" id="mealModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">&#127869; 식단 추가</span><button class="modal-close" onclick="closeModal('mealModal')">&#10005;</button></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">날짜</label><input class="form-control" type="date" id="m-mdate"></div>
+      <div class="form-group"><label class="form-label">식사 구분</label><select class="form-control" id="m-mtype"><option>아침</option><option>점심</option><option>저녁</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">메뉴</label><input class="form-control" id="m-mmenu" placeholder="예: 된장찌개, 제육볶음"></div>
+    <div class="form-group"><label class="form-label">준비한 사람</label><select class="form-control" id="m-mchef"><option value="self">나</option><option value="husband">남편</option><option value="together">함께</option><option value="delivery">배달/외식</option></select></div>
+    <button class="btn btn-primary btn-full mt-8" onclick="saveMeal()">저장하기</button>
+  </div>
+</div>
+
+<!-- 추가 선택 -->
+<div class="modal-overlay" id="addSelectModal">
+  <div class="modal">
+    <div class="modal-hdr"><span class="modal-title">&#10133; 무엇을 추가할까요?</span><button class="modal-close" onclick="closeModal('addSelectModal')">&#10005;</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <button class="btn btn-primary" style="height:64px;font-size:15px;" onclick="openModal('incomeModal','addSelectModal')">&#128176; 수입</button>
+      <button class="btn" style="height:64px;font-size:15px;background:linear-gradient(135deg,#f56565,#c53030);color:#fff;" onclick="openModal('expenseModal','addSelectModal')">&#128184; 지출</button>
+      <button class="btn" style="height:64px;font-size:15px;background:linear-gradient(135deg,#48bb78,#276749);color:#fff;" onclick="openModal('assetModal','addSelectModal')">&#127974; 자산</button>
+      <button class="btn" style="height:64px;font-size:15px;background:linear-gradient(135deg,#667eea,#4c51bf);color:#fff;" onclick="openModal('fridgeModal','addSelectModal')">&#10052; 식재료</button>
+      <button class="btn" style="height:64px;font-size:15px;background:linear-gradient(135deg,#ed8936,#c05621);color:#fff;grid-column:span 2;" onclick="openModal('mealModal','addSelectModal')">&#127869; 식단</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DB ── */
+const DB={
+  get:(k,d=[])=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  obj:(k,d={})=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+};
+
+let curTab='dashboard', selMealDate='', assetFilter='all';
+
+/* ── 초기화 ── */
+document.addEventListener('DOMContentLoaded',()=>{
+  setDate();loadSettings();initMealWeek();renderAll();checkPWA();registerSW();
+  const t=new Date().toISOString().split('T')[0];
+  document.getElementById('m-expdate').value=t;
+  document.getElementById('m-fexp').value=t;
+  document.getElementById('m-mdate').value=t;
+});
+
+function setDate(){
+  const n=new Date(), days=['일','월','화','수','목','금','토'];
+  document.getElementById('headerDate').textContent=
+    `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 (${days[n.getDay()]})`;
+}
+function renderAll(){renderDash();renderIncome();renderExpenses();renderAssets();renderFridge();if(selMealDate)renderMealDetail(selMealDate)}
+
+/* ── 탭 ── */
+function switchTab(tab,el){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  el.classList.add('active'); curTab=tab;
+  document.getElementById('fabBtn').style.display=['dashboard','settings'].includes(tab)?'none':'flex';
+  if(tab==='asset')drawChart();
+}
+
+/* ── 모달 ── */
+function openModal(id,cf=null){if(cf)closeModal(cf);document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function openAddModal(){const m={finance:'addSelectModal',asset:'assetModal',fridge:'fridgeModal',meal:'mealModal'};openModal(m[curTab]||'addSelectModal')}
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
+
+/* ── 수입 ── */
+function saveIncome(){
+  const d=DB.get('incomes');
+  d.push({id:Date.now(),day:document.getElementById('m-incday').value,name:document.getElementById('m-incname').value,amount:+document.getElementById('m-incamt').value,owner:document.getElementById('m-incowner').value});
+  DB.set('incomes',d);closeModal('incomeModal');renderAll();
+}
+function renderIncome(){
+  const inc=DB.get('incomes');
+  const labels=[['1','1일 월급'],['10','10일 부수입'],['20','20일 기타']];
+  document.getElementById('incomeCards').innerHTML=labels.map(([d,l])=>`
+    <div class="income-day-card">
+      <div class="income-day-label">${l}</div>
+      <div class="income-day-value">${fmt(inc.filter(x=>x.day===d).reduce((s,x)=>s+x.amount,0))}</div>
+    </div>`).join('');
+}
+
+/* ── 지출 ── */
+function saveExpense(){
+  const d=DB.get('expenses');
+  d.push({id:Date.now(),date:document.getElementById('m-expdate').value,category:document.getElementById('m-expcat').value,desc:document.getElementById('m-expdesc').value,amount:+document.getElementById('m-expamt').value});
+  DB.set('expenses',d);closeModal('expenseModal');renderAll();
+}
+function renderExpenses(){
+  const exp=DB.get('expenses');
+  if(!exp.length){document.getElementById('expenseList').innerHTML='<div class="empty-state"><div class="empty-icon">&#128203;</div><div>지출 내역이 없어요</div></div>';return}
+  document.getElementById('expenseList').innerHTML=[...exp].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30).map(e=>`
+    <div class="expense-item">
+      <div><span class="exp-cat cat-${e.category}">${e.category}</span>
+        <span style="font-size:13px;margin-left:6px;">${e.desc}</span>
+        <div style="font-size:11px;color:var(--text-light);margin-top:2px;">${e.date}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-weight:700;color:var(--danger);">-${fmt(e.amount)}</span>
+        <button class="btn btn-sm" style="background:#fff5f5;color:var(--danger);" onclick="delExp(${e.id})">&#10005;</button>
+      </div>
+    </div>`).join('');
+}
+function delExp(id){DB.set('expenses',DB.get('expenses').filter(x=>x.id!==id));renderAll()}
+
+/* ── 자산 ── */
+function saveAsset(){
+  const d=DB.get('assets');
+  d.push({id:Date.now(),name:document.getElementById('m-aname').value,owner:document.getElementById('m-aowner').value,type:document.getElementById('m-atype').value,institution:document.getElementById('m-ainst').value,amount:+document.getElementById('m-aamt').value,rate:+document.getElementById('m-arate').value,maturity:document.getElementById('m-amat').value,memo:document.getElementById('m-amemo').value});
+  DB.set('assets',d);closeModal('assetModal');renderAll();
+}
+function filterAssets(f){
+  assetFilter=f;
+  ['all','self','husband','joint'].forEach(k=>{
+    document.getElementById('fa-'+k).style.border=k===f?'2px solid var(--primary)':'2px solid transparent';
+  });
+  renderAssets();
+}
+function renderAssets(){
+  const all=DB.get('assets'), filtered=assetFilter==='all'?all:all.filter(a=>a.owner===assetFilter);
+  const tot=all.reduce((s,a)=>s+a.amount,0);
+  if(tot>0){
+    const mine=all.filter(a=>a.owner==='self').reduce((s,a)=>s+a.amount,0);
+    const hub=all.filter(a=>a.owner==='husband').reduce((s,a)=>s+a.amount,0);
+    const joint=all.filter(a=>a.owner==='joint').reduce((s,a)=>s+a.amount,0);
+    document.querySelector('#ownerBar .ob-mine').style.width=(mine/tot*100).toFixed(0)+'%';
+    document.querySelector('#ownerBar .ob-hub').style.width=(hub/tot*100).toFixed(0)+'%';
+    document.querySelector('#ownerBar .ob-joint').style.width=(joint/tot*100).toFixed(0)+'%';
+    document.getElementById('r-mine').textContent=(mine/tot*100).toFixed(0)+'%';
+    document.getElementById('r-hub').textContent=(hub/tot*100).toFixed(0)+'%';
+    document.getElementById('r-joint').textContent=(joint/tot*100).toFixed(0)+'%';
+  }
+  if(!filtered.length){document.getElementById('assetList').innerHTML='<div class="empty-state"><div class="empty-icon">&#127974;</div><div>자산을 추가해보세요</div></div>';return}
+  const today=new Date();
+  document.getElementById('assetList').innerHTML=filtered.map(a=>{
+    const oc=a.owner==='husband'?'hub':a.owner==='joint'?'joint':'';
+    const ol=a.owner==='self'?'<span class="chip chip-blue">나</span>':a.owner==='husband'?'<span class="chip chip-pink">남편</span>':'<span class="chip chip-green">공동</span>';
+    let dd='';
+    if(a.maturity){const diff=Math.ceil((new Date(a.maturity)-today)/864e5);dd=diff<=30?`<span class="abadge dd-red">&#128308; D-${diff}</span>`:diff<=90?`<span class="abadge dd-yellow">&#128993; D-${diff}</span>`:`<span class="abadge dd-green">&#128994; D-${diff}</span>`}
+    return`<div class="asset-item ${oc}">
+      <div class="asset-hdr">
+        <div class="asset-name">${a.name}</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="asset-value">${fmt(a.amount)}</div>
+          <button class="btn btn-sm" style="background:#fff5f5;color:var(--danger);padding:4px 8px;" onclick="delAsset(${a.id})">&#10005;</button>
+        </div>
+      </div>
+      <div class="asset-meta">
+        ${ol}<span class="abadge">${a.type}</span>
+        ${a.institution?`<span class="abadge">${a.institution}</span>`:''}
+        ${a.rate?`<span class="abadge">연 ${a.rate}%</span>`:''}
+        ${dd}${a.maturity?`<span class="abadge">만기 ${a.maturity}</span>`:''}
+      </div>
+      ${a.memo?`<div style="font-size:12px;color:var(--text-light);margin-top:6px;">&#128221; ${a.memo}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function delAsset(id){DB.set('assets',DB.get('assets').filter(x=>x.id!==id));renderAll();drawChart()}
+function drawChart(){
+  const canvas=document.getElementById('assetChart');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const total=DB.get('assets').reduce((s,a)=>s+a.amount,0);
+  canvas.width=canvas.offsetWidth;canvas.height=180;
+  const W=canvas.width,H=160;ctx.clearRect(0,0,W,H+20);
+  const months=[];const now=new Date();
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(`${d.getMonth()+1}월`)}
+  const vals=months.map((_,i)=>Math.max(0,total*(0.8+i*0.04)));vals[5]=total;
+  const maxV=Math.max(...vals,1),barW=(W-40)/6*.6,gap=(W-40)/6;
+  months.forEach((m,i)=>{
+    const x=20+gap*i+gap*.2,barH=(vals[i]/maxV)*(H-30),y=H-barH;
+    const g=ctx.createLinearGradient(0,y,0,H);g.addColorStop(0,'#667eea');g.addColorStop(1,'#764ba2');
+    ctx.fillStyle=i===5?g:'#c3d1fa';ctx.beginPath();ctx.roundRect(x,y,barW,barH,4);ctx.fill();
+    ctx.fillStyle='#718096';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(m,x+barW/2,H+14);
+    if(i===5){ctx.fillStyle='#667eea';ctx.font='bold 10px sans-serif';ctx.fillText(fmtS(vals[i]),x+barW/2,y-4)}
+  });
+}
+
+/* ── 냉장고 ── */
+function saveFridge(){
+  const d=DB.get('fridge');
+  d.push({id:Date.now(),name:document.getElementById('m-fname').value,location:document.getElementById('m-floc').value,expiry:document.getElementById('m-fexp').value,qty:document.getElementById('m-fqty').value});
+  DB.set('fridge',d);closeModal('fridgeModal');renderFridge();renderDash();
+}
+function renderFridge(){
+  const items=DB.get('fridge'),today=new Date(),zones={u:[],w:[],o:[]};
+  items.forEach(item=>{const diff=Math.ceil((new Date(item.expiry)-today)/864e5);item._d=diff;if(diff<=3)zones.u.push(item);else if(diff<=7)zones.w.push(item);else zones.o.push(item)});
+  const rz=(arr,bc)=>!arr.length?'<div class="empty-state"><div class="empty-icon">&#9989;</div><div>해당 식재료 없음</div></div>':
+    arr.map(item=>`<div class="fridge-item">
+      <div><div class="fi-name">${item.name}${item.qty?` <span style="font-size:12px;color:var(--text-light);">(${item.qty})</span>`:''}</div>
+        <div class="fi-meta">${item.location} · 소비기한 ${item.expiry}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="dday-badge ${bc}">D${item._d>=0?'-':'+'}${Math.abs(item._d)}</span>
+        <button class="btn btn-sm" style="background:#fff5f5;color:var(--danger);" onclick="delFridge(${item.id})">&#10005;</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('fz-urgent').innerHTML=rz(zones.u,'dd-urgent');
+  document.getElementById('fz-warn').innerHTML=rz(zones.w,'dd-warn');
+  document.getElementById('fz-ok').innerHTML=rz(zones.o,'dd-ok');
+}
+function delFridge(id){DB.set('fridge',DB.get('fridge').filter(x=>x.id!==id));renderFridge();renderDash()}
+
+/* ── 식단 ── */
+function initMealWeek(){
+  const today=new Date(),dn=['일','월','화','수','목','금','토'];let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-today.getDay()+i);
+    const ds=d.toISOString().split('T')[0],it=ds===today.toISOString().split('T')[0];
+    html+=`<div class="meal-day ${it?'selected':''}" onclick="selDay('${ds}',this)">
+      <div class="md-name">${dn[i]}</div>
+      <div class="md-num" style="${it?'color:var(--primary);':''}">${d.getDate()}</div>
+      <div class="md-dot" style="opacity:0" id="dot-${ds}"></div>
+    </div>`;
+  }
+  document.getElementById('mealWeekGrid').innerHTML=html;
+  selMealDate=today.toISOString().split('T')[0];
+  renderMealDetail(selMealDate);updateDots();
+}
+function selDay(date,el){document.querySelectorAll('.meal-day').forEach(d=>d.classList.remove('selected'));el.classList.add('selected');selMealDate=date;document.getElementById('m-mdate').value=date;renderMealDetail(date)}
+function updateDots(){const meals=DB.get('meals');document.querySelectorAll('[id^="dot-"]').forEach(dot=>{const date=dot.id.replace('dot-','');dot.style.opacity=meals.some(m=>m.date===date)?'1':'0'})}
+function saveMeal(){
+  const d=DB.get('meals'),s=DB.obj('settings',{myName:'나',hubName:'남편'});
+  const cv=document.getElementById('m-mchef').value;
+  const cm={self:s.myName||'나',husband:s.hubName||'남편',together:'함께',delivery:'배달/외식'};
+  d.push({id:Date.now(),date:document.getElementById('m-mdate').value,type:document.getElementById('m-mtype').value,menu:document.getElementById('m-mmenu').value,chef:cm[cv]||cv});
+  DB.set('meals',d);closeModal('mealModal');renderMealDetail(selMealDate);updateDots();renderDash();
+}
+function renderMealDetail(date){
+  const meals=DB.get('meals').filter(m=>m.date===date);
+  if(!meals.length){document.getElementById('mealDetail').innerHTML=`<div class="empty-state"><div class="empty-icon">&#127869;</div><div>${date} 등록된 식단이 없어요</div></div>`;return}
+  const tc={'아침':'mb-breakfast','점심':'mb-lunch','저녁':'mb-dinner'};
+  const order=['아침','점심','저녁'];
+  document.getElementById('mealDetail').innerHTML=[...meals].sort((a,b)=>order.indexOf(a.type)-order.indexOf(b.type)).map(m=>`
+    <div class="meal-card">
+      <span class="meal-badge ${tc[m.type]||''}">${m.type}</span>
+      <div class="meal-menu">${m.menu}</div>
+      <div class="meal-chef">&#128104;&#8205;&#127859; ${m.chef}</div>
+      <button class="btn btn-sm btn-danger" style="margin-top:8px;" onclick="delMeal(${m.id})">삭제</button>
+    </div>`).join('');
+}
+function delMeal(id){DB.set('meals',DB.get('meals').filter(x=>x.id!==id));renderMealDetail(selMealDate);updateDots()}
+
+/* ── 대시보드 ── */
+function renderDash(){
+  const inc=DB.get('incomes'),exp=DB.get('expenses'),ast=DB.get('assets'),s=DB.obj('settings',{savingsGoal:50});
+  const ti=inc.reduce((s,x)=>s+x.amount,0),te=exp.reduce((s,x)=>s+x.amount,0),ta=ast.reduce((s,x)=>s+x.amount,0);
+  const sr=ti>0?Math.round((ti-te)/ti*100):0,goal=+s.savingsGoal||50;
+  document.getElementById('d-income').textContent=fmt(ti);
+  document.getElementById('d-expense').textContent=fmt(te);
+  document.getElementById('d-asset').textContent=fmt(ta);
+  document.getElementById('d-rate').textContent=sr+'%';
+  document.getElementById('d-expratio').textContent=ti>0?`지출률 ${Math.round(te/ti*100)}%`:'지출률 0%';
+  document.getElementById('d-ratetext').textContent=sr+'%';
+  document.getElementById('d-goaltext').textContent=goal+'%';
+  document.getElementById('d-progressbar').style.width=Math.min(sr/goal*100,100)+'%';
+  // 오늘 식단
+  const t=new Date().toISOString().split('T')[0];
+  const tm=DB.get('meals').filter(m=>m.date===t);
+  const tc={'아침':'mb-breakfast','점심':'mb-lunch','저녁':'mb-dinner'};
+  document.getElementById('d-todaymeal').innerHTML=tm.length?tm.map(m=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;"><span class="meal-badge ${tc[m.type]||''}" style="margin:0;">${m.type}</span><span style="font-size:14px;font-weight:600;">${m.menu}</span><span style="font-size:11px;color:var(--text-light);">by ${m.chef}</span></div>`).join(''):'<div class="empty-state"><div class="empty-icon">&#127869;</div><div>오늘 식단이 없어요</div></div>';
+  // 임박 식재료
+  const fi=DB.get('fridge').filter(item=>Math.ceil((new Date(item.expiry)-new Date())/864e5)<=3);
+  document.getElementById('d-urgentfridge').innerHTML=fi.length?fi.map(item=>{const d=Math.ceil((new Date(item.expiry)-new Date())/864e5);return`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-size:13px;font-weight:600;">${item.name}</span><span class="dday-badge dd-urgent">D-${d}</span></div>`}).join(''):'<div class="empty-state"><div class="empty-icon">&#9989;</div><div>임박한 식재료 없음</div></div>';
+  // 만기 자산
+  const up=ast.filter(a=>{if(!a.maturity)return false;return Math.ceil((new Date(a.maturity)-new Date())/864e5)<=30});
+  document.getElementById('d-maturity').innerHTML=up.length?up.map(a=>{const d=Math.ceil((new Date(a.maturity)-new Date())/864e5);return`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><div><div style="font-size:13px;font-weight:600;">${a.name}</div><div style="font-size:11px;color:var(--text-light);">${fmt(a.amount)}</div></div><span class="dday-badge dd-urgent">D-${d}</span></div>`}).join(''):'<div class="empty-state"><div class="empty-icon">&#127974;</div><div>만기 예정 자산 없음</div></div>';
+}
+
+/* ── 설정 ── */
+function loadSettings(){const s=DB.obj('settings',{myName:'나',hubName:'남편',savingsGoal:50});document.getElementById('s-myname').value=s.myName||'나';document.getElementById('s-hubname').value=s.hubName||'남편';document.getElementById('s-goal').value=s.savingsGoal||50}
+function saveSetting(){DB.set('settings',{myName:document.getElementById('s-myname').value,hubName:document.getElementById('s-hubname').value,savingsGoal:+document.getElementById('s-goal').value})}
+function exportData(){const data={incomes:DB.get('incomes'),expenses:DB.get('expenses'),assets:DB.get('assets'),fridge:DB.get('fridge'),meals:DB.get('meals'),settings:DB.obj('settings')};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`가계부_${new Date().toISOString().split('T')[0]}.json`;a.click()}
+function importData(){document.getElementById('importFile').click()}
+function handleImport(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);['incomes','expenses','assets','fridge','meals','settings'].forEach(k=>{if(data[k])DB.set(k,data[k])});renderAll();alert('데이터를 성공적으로 가져왔습니다!')}catch{alert('파일 형식이 올바르지 않습니다.')}};reader.readAsText(file)}
+function clearAllData(){if(confirm('모든 데이터가 삭제됩니다. 계속하시겠습니까?')){['incomes','expenses','assets','fridge','meals'].forEach(k=>localStorage.removeItem(k));renderAll();alert('초기화 완료')}}
+
+/* ── PWA ── */
+function registerSW(){if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').then(()=>{document.getElementById('pwaStatus').textContent='✅ 활성화됨'}).catch(()=>{document.getElementById('pwaStatus').textContent='⚠️ 등록 실패'})}}
+function checkPWA(){if(window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone){document.getElementById('headerBadge').textContent='📱 앱 모드'}}
+
+/* ── 유틸 ── */
+function fmt(n){if(n>=100000000)return(n/100000000).toFixed(1).replace(/\.0$/,'')+'억원';if(n>=10000)return Math.round(n/10000)+'만원';return n.toLocaleString()+'원'}
+function fmtS(n){if(n>=100000000)return(n/100000000).toFixed(1)+'억';if(n>=10000)return Math.round(n/10000)+'만';return n.toLocaleString()}
+</script>
+</body>
+</html>
